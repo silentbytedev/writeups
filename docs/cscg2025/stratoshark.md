@@ -14,10 +14,11 @@ We have noticed some strange behaviour on our development server. Maybe this new
 Flagformat: `dach2025{....}`
 
 # Information Gathering
-I first opened the file with wireshark and was very confused. While browsing, I could not imagine, that the <spärliche> information presented could lead to any flag. I ended up googling for “SysDig” [1]() and eventually found the “stratoshark”-tool (2)
-![Opened the pcapng in wireshark](assets/stratoshark_01.png)
+I first opened the file with wireshark and was very confused. While browsing, I could not imagine, that the sparse information presented could lead to any flag. 
+
+![Opened the pcapng in wireshark](/assets/stratoshark_01.png)
  
-After installing and opening the provided pcapng – File with stratoshark there was much more information available. However, I was quickly overwhelmed with the amount of information available and had no idea of where to start after looking at the entries for a few minutes.
+I ended up googling for “SysDig” [1]() and eventually found the “stratoshark”-tool (2). After installing and opening the provided pcapng file with stratoshark there was much more information available. However, I was quickly overwhelmed with the amount of information available and had no idea of where to start after looking at the entries for a few minutes.
  
 ## Rabbit-Hole (1)
 I hoped, some more googling will help and ended up analyzing the pcapng file using the sysdig-tool
@@ -27,7 +28,7 @@ I hoped, some more googling will help and ended up analyzing the pcapng file usi
 ## Getting an Overview
 While the sysdig excursion did not yield any quick results, I turned back to stratoshark. Filtering did not yet make sense to me, because, I did not know, what to look for. Because stratoshark is a wireshark sibling, it also offers some statistic analysis of the file. The statistics of the current pcap yielded some interesting information
  
-<screenshot of process-statistics>
+<!-- screenshot of process-statistics -->
  
 ## Weitere statistiken?
  
@@ -38,16 +39,16 @@ It seems to be a Linux system because x,y processes are present
 I decided to have a quick look at some processes applying the display filters in stratoshark
 - Node `proc.name == node` The node process seems to run the vs code development process. This makes sense, as the challenge description yields that this is in fact the ‘development server’
 - Ssh `proc.name== ssh`: There were sessions from different src addresses (). Because there is no data nor user information available in the pcap, I quickly abandoned this path. Possibly the users are connecting to the server using ssh and are tunneling the communication with the development server through ssh.
-- top `proc.name ==  top`. A this time of the analysis, it the presence of the top process made no sense to me. I assume, that one of the users logged in one of the ssh-sessions was monitoring the server, because they had <festgestellt> some unusual behaviour
+- top `proc.name ==  top`. A this time of the analysis, it the presence of the top process made no sense to me. I assumed, that one of the users logged in one of the ssh-sessions was monitoring the server, because they suspected some unusual behaviour
  
 ## sharky process
 The sharky process attracted my interest. A google search gave the impression that this is not a well known process. Let's look at it by filtering for this process `proc.name == sharky`
  
-<screenshot sharky startup>
-<screenshot connect and key>
-<screenshot tmp file written>
-<screenshot flag written>
-<screenshot heartbeat>
+<!-- screenshot sharky startup -->
+<!-- screenshot connect and key -->
+<!-- screenshot tmp file written -->
+<!-- screenshot flag written -->
+<!-- screenshot heartbeat -->
  
 Whois of he c2 IP address à XEROX
  
@@ -57,14 +58,14 @@ Filtering too much: Only looking at a single process was a dead end, ause the co
 ## Active debugging session
 After giving up digging further into this rabbit hole, I decided to ditch the display filter (proc.name == sharky) o be able to look at the arguments just before the sharky process has been started. It took me some time & scrolling before I suddenly realized a debugging session has been started by the sharky process
  
-<screenshot PTRACE_ATTACH>
+<!-- screenshot PTRACE_ATTACH>
  
 Decode the data injected into the process-memory of the top-process
-<screenshot PTRACE_POKE>
+<!-- screenshot PTRACE_POKE>
  
-<screenshot raw address/Bytes>
-<decode script>
-<decoded string>
+<!-- screenshot raw address/Bytes -->
+<!-- decode script -->
+<!-- decoded string -->
  
 ## IO/operations
 Now it seemed like a good idea, to do a deep investigation of the top process after its memory has been tampered with
