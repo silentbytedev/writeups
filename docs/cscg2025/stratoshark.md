@@ -16,7 +16,8 @@ Flagformat: `dach2025{....}`
 # Information Gathering
 I first opened the file with wireshark and was very confused. While browsing, I could not imagine, that the sparse information presented could lead to any flag. 
 
-![Opened the pcapng in wireshark](/assets/stratoshark_01.png)
+![Opened the pcapng in wireshark](/assets/img/stratoshark_01.png)
+![Opened the pcapng in wireshark](assets/stratoshark_01.png)
  
 I ended up googling for “SysDig” [1]() and eventually found the “stratoshark”-tool (2). After installing and opening the provided pcapng file with stratoshark there was much more information available. However, I was quickly overwhelmed with the amount of information available and had no idea of where to start after looking at the entries for a few minutes.
  
