@@ -75,10 +75,11 @@ The readme contains insructions on how to get the flag:
 cat readme
 bof binary is running at "nc 0 9000" under bof_pwn privilege. get shell and read flag
 ```
-## Vulnerability
-The binary has a buffer overflow vulnerabilty because the gets() function performs no check on the size of the input. It will keep on accepting input until a newline is encountered irrespective of the size of the variable in which the input is being stored. This property is described as a lack of ‘bounds checking’.
 
-Because canaries are used, the stack is protected against overflow-attacks: 
+## Vulnerability
+The binary has a buffer overflow vulnerabilty: The gets() function performs no check on the size of the input. It will keep on accepting input until a newline is encountered irrespective of the size of the variable in which the input is being stored. This property is described as a lack of ‘bounds checking’.
+
+Because canaries are used (see checksec output), the stack is protected against overflow-attacks: 
 
 ```shell
 bof@ubuntu:~$ ./bof
