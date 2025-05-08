@@ -44,9 +44,8 @@ bof@ubuntu:~$ checksec --file bof
 
 ````
 
-The binary has stack protection enabled (canary) has position-independent code (PIC) enabled. The binary runs properly regardless of the memory location it’s loaded at, i.e., the memory location doesn’t need to be a fixed address.
+The binary has stack protection enabled (canary) and has position-independent code (PIC) enabled. The binary runs properly regardless of the memory location it’s loaded at, i.e., the memory location doesn’t need to be a fixed address.
 
---> Run the binary in ctf-pwn container (tools/ctf/pwn)
 The source code of the binary is provided in `bof.c`
 
 ```c
